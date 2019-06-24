@@ -1,0 +1,133 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>basic-demo</title>
+<!--
+  1、sTemplate和art-template的性能比较
+  2、递归模板
+  art-template请自行下载
+-->
+<script src="template-web.js"></script>
+<script src="..\src\stemplate.js"></script>
+</head>
+
+<body>
+<div id="content0"></div>
+<div id="content1"></div>
+<div id="content2"></div>
+
+<!-- art-template模板 -->
+<script type="text/html" id='artest'>
+  {{each children item1 idx1}}
+    <h2 class="title">{{ item1.menuname }}</h2>
+    <div class="item">
+      {{each item1.children item2 idx2}}
+        <dl>
+          <dt>{{ item2.menuname }}</dt>
+          <dd>
+            <ul>
+              {{each item2.children item3 idx3}}
+                <li>
+                  <a href="javascript:;" onclick="console.log('{{item3.menuid}}','{{item3.menuname}}', '{{item3.resurl}}')">{{item3.menuname}}</a>
+                </li>
+              {{/each}}
+            </ul>
+          </dd>
+        </dl>
+      {{/each}}
+    </div>
+  {{/each}}
+</script>
+
+<!-- sTemplate模板，和上面模板功能相同 -->
+<script type="text/html" id='xtest' argname='d'>
+  d = d || [];
+  for (var i in d.children) {
+  	var item1 = d.children[i];
+    <h2 class="title">{{ item1.menuname }}</h2>
+    <div class="item">
+      for (var j in item1.children) {
+      	var item2 = item1.children[j];
+        <dl>
+          <dt>{{ item2.menuname }}</dt>
+          <dd>
+            <ul>
+              for (var k in item2.children) {
+              	var item3 = item2.children[k];
+                <li>
+                  <a href="javascript:;" onclick="console.log('{{item3.menuid}}','{{item3.menuname}}', '{{item3.resurl}}')">{{item3.menuname}}</a>
+                </li>
+              }
+            </ul>
+          </dd>
+        </dl>
+      }
+    </div>
+  }
+</script>
+
+<!-- 递归模板 -->
+<script type="text/html" id='rtest'>
+  <ul>
+    for (var k in _arg) {
+      <li>
+        <h5>{{ k }}</h5>
+        if ('object' == typeof _arg[k]) {
+          {{ sTemplate.template_rtest(_arg[k]) }}
+        } else {
+          <span>{{ _arg[k] }}</span>
+        }
+      </li>
+    }
+  </ul>
+</script>
+
+<script>
+//生成max个随机数据
+var max=10000;
+var data = [];
+for(var t=0; t<max; ++t) {
+	var d = {children:[]};
+	for (var i=rand(3,5); i>0; --i) {
+		var n1 = {menuid:''+i, menuname:'level'+i, resurl:'', children:[]};
+		d.children.push(n1);
+		for (var j=rand(5,7); j>0; --j) {
+			var n2 = {menuid:n1.menuid+'_'+j, menuname:n1.menuname+'_'+j, resurl:'', children:[]};
+			n1.children.push(n2);
+			for (var k=rand(5,15); k>0; --k) {
+				var n3 = {menuid:n2.menuid+'_'+k, menuname:n2.menuname+'_'+k, resurl:''};
+				n2.children.push(n3);
+			}
+		}
+	}
+	data.push(d);
+}
+
+//art-template渲染
+var html;
+var t = new Date().getTime();
+for(var i=0; i<max; ++i) {
+	html = template('artest', data[i]);
+}
+console.log(new Date().getTime() - t);
+document.getElementById('content1').innerHTML = html;
+
+//stemplate渲染
+t = new Date().getTime();
+for(var i=0; i<max; ++i) {
+	html = sTemplate.renderTmpl('xtest', data[i]);
+}
+console.log(new Date().getTime() - t);
+document.getElementById('content2').innerHTML = html;
+
+//递归模板渲染
+sTemplate.renderTmplTo('rtest', data[0], 'content0');
+
+//随机数函数
+function rand(from, to) {
+	return from+Math.round(Math.random()*(to - from));
+}
+</script>
+</body>
+</html>
