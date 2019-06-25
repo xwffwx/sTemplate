@@ -47,7 +47,7 @@ var sTemplate = {};
         case '>':
           funcbody += ch;
           if ('html' == lineflag && !inhtmlstr) {
-            labelend = true; //当前html标签结束了
+            labelend = true;
           }
           break;
         case '<':
@@ -149,7 +149,6 @@ var sTemplate = {};
   sTemplate.renderTmpl = function(tmpid, data) {
     var domnode = document.getElementById(tmpid);
     var fucname = 'template_'+tmpid;
-    //var arg = JSON.stringify(data);
 
     if (sTemplate[fucname]) {
       return sTemplate[fucname](data);
