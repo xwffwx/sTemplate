@@ -3,45 +3,51 @@
  @Author: xiaowf
  @Date: 2019/06/14
  */
-'use strict';
-
-var sTemplate = {};
+var sTemplate = {
+  ver: 1.0
+  , argname: 'st'
+  , build:{}
+};
 (function() {
+  'use strict';
   /*
-   * 编译模板，编译模板脚本为一个js函数
+   * 编译模板，返回模板函数
    * 参数
-   *   fucname: 编译输出函数名
-   *   source:  脚本内容
-   *   argname: 模板参数名
+   *   source:  模板内容
+   * 返回值
+   *   模板函数
    */
-  function compileTmpl(fucname, source, argname) {
+  sTemplate.compile = function(source) {
     var lineflag = ' ';
     var inhtmlstr = null;
     var labelend = false;
+
     var ch;
-    var funcbody = 'sTemplate.'+fucname+'=function('+argname+') {\nvar _result="";\n';
+    var prespace = '';
+    var funcbody = 'var _result="";\n';
     for (var i=0; i<source.length; ++i) {
       ch = source[i];
       switch (ch) {
         case ' ':
         case '\t':
         case '\r':
-          funcbody += ch;
+          if (' ' == lineflag) {
+            prespace += ch;
+          } else {
+            funcbody += ch;
+          }
           break;
         case '\n':
+          prespace = '';
           if ('code' == lineflag) {
             funcbody += ch;
             lineflag = ' ';
           } else if ('html' == lineflag) {
-            funcbody += '";\n';
             if (labelend) {
+              funcbody += '";\n';
               lineflag = ' ';
               labelend = false;
-            } else {
-              funcbody += '_result+="';
             }
-          } else {
-            funcbody += ch;
           }
           break;
         case '>':
@@ -52,8 +58,13 @@ var sTemplate = {};
           break;
         case '<':
           if (' ' == lineflag) {
-            funcbody += '_result += "<';
+            if ('";\n' == funcbody.substring(funcbody.length-3)) {
+              funcbody = funcbody.substring(0, funcbody.length-3)+/*prespace+*/'<';
+            } else {
+              funcbody += '_result += "'+/*prespace+*/'<';
+            }
             lineflag = 'html';
+            prespace = '';
             labelend = false;
           } else {
             funcbody += ch;
@@ -94,11 +105,9 @@ var sTemplate = {};
             for (var j=i+2; j<source.length; ++j) {
               if (source[j] == '}' && source[j+1] == '}') {
                 if ('html' == lineflag) {
-                  funcbody += '";\n';
-                }
-                funcbody += '_result+=('+expr+');\n';
-                if ('html' == lineflag) {
-                  funcbody += '_result+="';
+                  funcbody += '"+('+expr+')+"';
+                } else {
+                  funcbody += '_result+=('+expr+');\n';
                 }
                 i = j+1;
                 break;
@@ -111,25 +120,41 @@ var sTemplate = {};
           }
           break;
         default:
-          funcbody += ch;
+          funcbody += prespace+ch;
+          prespace = '';
           if (' ' == lineflag) {
             lineflag = 'code';
           }
       }
     }
-    funcbody += '\nreturn _result;\n};'
-    eval(funcbody);
+    funcbody += '\nreturn _result;';
+    return new Function(sTemplate.argname || "st", funcbody);
   }
 
   /*
-   * 渲染模板到指定节点
+   * 编译模板，返回模板函数
+   * 和compile的区别，会在build对象中生成函数引用
+   * 参数
+   *   tmpid: 模板id
+   * 返回值
+   *   模板函数
+   */
+  sTemplate.compileTmpl = function(tmpid) {
+    var domnode = document.getElementById(tmpid);
+    var source = domnode.innerHTML;
+    return sTemplate.build['template_'+tmpid] = sTemplate.compile(source);
+  }
+
+  /*
+   * 渲染模板到指定节点，会利用上次的编译结果
    * 参数
    *   tmpid: 模板id
    *   data:  渲染数据
-   *   node:  节点id
+   *   node:  节点id，可以是jquery对象
+   * 返回值 无
    */
   sTemplate.renderTmplTo = function(tmpid, data, node) {
-    var tmplresult = this.renderTmpl(tmpid, data);
+    var tmplresult = sTemplate.renderTmpl(tmpid, data);
     if ('string' === typeof tmplresult) {
       if ('string' === typeof node) {
         var domnode = document.getElementById(node);
@@ -141,22 +166,19 @@ var sTemplate = {};
   }
 
   /*
-   * 渲染模板，返回渲染内容
+   * 渲染模板，返回渲染内容，会利用上次的编译结果
    * 参数
    *   tmpid: 模板id
    *   data:  渲染数据
+   * 返回值
+   *   模板渲染结果
    */
   sTemplate.renderTmpl = function(tmpid, data) {
-    var domnode = document.getElementById(tmpid);
     var fucname = 'template_'+tmpid;
-
-    if (sTemplate[fucname]) {
-      return sTemplate[fucname](data);
+    if (sTemplate.build[fucname]) {
+      return sTemplate.build[fucname](data);
     } else {
-      var argname = domnode.getAttribute('argname') || '_arg'; //默认参数名为_arg
-      var source = domnode.innerHTML;
-      compileTmpl(fucname, source, argname);
-      return sTemplate[fucname](data);
+      return sTemplate.compileTmpl(tmpid)(data);
     }
   }
 

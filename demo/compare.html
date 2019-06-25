@@ -25,14 +25,16 @@
       <th>名称</th>
       <th>速度</th>
       <th>比率</th>
+      <th>结果</th>
     </tr>
   </thead>
   <tbody>
-    for (var k in _arg) {
+    for (var k in st) {
       <tr>
-        <td>{{ _arg[k].name }}</td>
-        <td>{{ _arg[k].t }}ms</td>
-        <td style='text-align:right;'>{{ Math.round((_arg[k].t / _arg[0].t)*100)/100 }}</td>
+        <td>{{ st[k].name }}</td>
+        <td>{{ st[k].t }}ms</td>
+        <td style='text-align:right;'>{{ Math.round((st[k].t / st[0].t)*100)/100 }}</td>
+        <td><div style="width: 300px;height: 100px;overflow: auto;">{{ st[k].result }}</div></td>
       </tr>
     }
   </tbody>
@@ -40,10 +42,9 @@
 </script>
 
 <!-- sTemplate模板，和上面模板功能相同 -->
-<script type="text/html" id='sTmpl' argname='d'>
-  d = d || [];
-  for (var i in d.children) {
-    var item1 = d.children[i];
+<script type="text/html" id='sTmpl'>
+  for (var i in st.children) {
+    var item1 = st.children[i];
     <h2 class="title">{{ item1.menuname }}</h2>
     <div class="item">
       for (var j in item1.children) {
@@ -64,6 +65,31 @@
       }
     </div>
   }
+</script>
+
+<script id="doTmpl" type="text/x-dot-template">
+  {{ for (var i in it.children) { }}
+    {{ var item1 = it.children[i]; }}
+    <h2 class="title">{{= item1.menuname }}</h2>
+    <div class="item">
+      {{ for (var j in item1.children) { }}
+        {{ var item2 = item1.children[j]; }}
+        <dl>
+          <dt>{{= item2.menuname }}</dt>
+          <dd>
+            <ul>
+              {{ for (var k in item2.children) { }}
+                {{ var item3 = item2.children[k]; }}
+                <li>
+                  <a href="javascript:;" onclick="console.log('{{= item3.menuid}}','{{= item3.menuname}}', '{{= item3.resurl}}')">{{= item3.menuname}}</a>
+                </li>
+              {{ } }}
+            </ul>
+          </dd>
+        </dl>
+      {{ } }}
+    </div>
+  {{ } }}
 </script>
 
 <!-- art-template模板 -->
@@ -112,31 +138,6 @@
   {@/each}
 </script>
 
-<script id="doTmpl" type="text/x-dot-template">
-  {{ for (var i in it.children) { }}
-    {{ var item1 = it.children[i]; }}
-    <h2 class="title">{{= item1.menuname }}</h2>
-    <div class="item">
-      {{ for (var j in item1.children) { }}
-        {{ var item2 = item1.children[j]; }}
-        <dl>
-          <dt>{{= item2.menuname }}</dt>
-          <dd>
-            <ul>
-              {{ for (var k in item2.children) { }}
-                {{ var item3 = item2.children[k]; }}
-                <li>
-                  <a href="javascript:;" onclick="console.log('{{= item3.menuid}}','{{= item3.menuname}}', '{{= item3.resurl}}')">{{= item3.menuname}}</a>
-                </li>
-              {{ } }}
-            </ul>
-          </dd>
-        </dl>
-      {{ } }}
-    </div>
-  {{ } }}
-</script>
-
 <script>
 
 //生成max个随机数据
@@ -163,46 +164,49 @@ var html;
 var ret = [];
 
 //stemplate渲染
-t = new Date().getTime();
-sTemplate.renderTmpl('sTmpl', data[0]);
-for(var i=1; i<max; ++i) {
-	html = //sTemplate.renderTmpl('sTmpl', data[i]);
-    sTemplate.template_sTmpl(data[i]);
-}
-ret.push({name: 'sTemplate', t: new Date().getTime() - t});
-sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-document.getElementById('content1').innerHTML = html;
-
-//art-template渲染
 var t = new Date().getTime();
+//var compiled_tpl = sTemplate.compileTmpl('sTmpl');
+var tpl = document.getElementById('sTmpl').innerHTML;
+var compiled_tpl = sTemplate.compile(tpl);
 for(var i=0; i<max; ++i) {
-  html = template('artTmpl', data[i]);
+  html = compiled_tpl(data[i]);
 }
-ret.push({name: 'art-template', t: new Date().getTime() - t});
+ret.push({name: 'sTemplate', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-document.getElementById('content2').innerHTML = html;
-
-//juicer渲染
-var t = new Date().getTime();
-var tpl = document.getElementById('juicerTmpl').innerHTML;
-var compiled_tpl = juicer(tpl);
-for(var i=0; i<max; ++i) {
-  html = compiled_tpl.render(data[i]);
-}
-ret.push({name: 'Juicer', t: new Date().getTime() - t});
-sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-document.getElementById('content3').innerHTML = html;
+//document.getElementById('content1').innerHTML = html;
 
 //doT渲染
-var t = new Date().getTime();
-tpl = document.getElementById('doTmpl').innerHTML;
+t = new Date().getTime();
+var tpl = document.getElementById('doTmpl').innerHTML;
 compiled_tpl = doT.template(tpl);
 for(var i=0; i<max; ++i) {
   html = compiled_tpl(data[i]);
 }
-ret.push({name: 'doT', t: new Date().getTime() - t});
+ret.push({name: 'doT', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-document.getElementById('content4').innerHTML = html;
+//document.getElementById('content2').innerHTML = html;
+
+//art-template渲染
+t = new Date().getTime();
+tpl = document.getElementById('artTmpl').innerHTML;
+compiled_tpl = template.compile(tpl);
+for(var i=0; i<max; ++i) {
+  html = compiled_tpl(data[i]);
+}
+ret.push({name: 'art-template', t: new Date().getTime() - t, result:html});
+sTemplate.renderTmplTo('resultTmpl', ret, 'result');
+//document.getElementById('content3').innerHTML = html;
+
+//juicer渲染
+t = new Date().getTime();
+tpl = document.getElementById('juicerTmpl').innerHTML;
+compiled_tpl = juicer(tpl);
+for(var i=0; i<max; ++i) {
+  html = compiled_tpl.render(data[i]);
+}
+ret.push({name: 'Juicer', t: new Date().getTime() - t, result:html});
+sTemplate.renderTmplTo('resultTmpl', ret, 'result');
+//document.getElementById('content4').innerHTML = html;
 
 //随机数函数
 function rand(from, to) {
