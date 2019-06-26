@@ -161,6 +161,7 @@ for(var t=0; t<max; ++t) {
 }
 
 var html;
+var style = 'compile'; //render compile
 var ret = [];
 
 //stemplate渲染
@@ -169,7 +170,12 @@ var t = new Date().getTime();
 var tpl = document.getElementById('sTmpl').innerHTML;
 var compiled_tpl = sTemplate.compile(tpl);
 for(var i=0; i<max; ++i) {
-  html = compiled_tpl(data[i]);
+  if ('render' == style) {
+    html = compiled_tpl(data[i]);
+  } else {
+    compiled_tpl = sTemplate.compile(tpl);
+    html = '';
+  }
 }
 ret.push({name: 'sTemplate', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
@@ -180,7 +186,12 @@ t = new Date().getTime();
 var tpl = document.getElementById('doTmpl').innerHTML;
 compiled_tpl = doT.template(tpl);
 for(var i=0; i<max; ++i) {
-  html = compiled_tpl(data[i]);
+  if ('render' == style) {
+    html = compiled_tpl(data[i]);
+  } else {
+    compiled_tpl = doT.template(tpl);
+    html = '';
+  }
 }
 ret.push({name: 'doT', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
@@ -191,7 +202,12 @@ t = new Date().getTime();
 tpl = document.getElementById('artTmpl').innerHTML;
 compiled_tpl = template.compile(tpl);
 for(var i=0; i<max; ++i) {
-  html = compiled_tpl(data[i]);
+  if ('render' == style) {
+    html = compiled_tpl(data[i]);
+  } else {
+    compiled_tpl = template.compile(tpl);
+    html = '';
+  }
 }
 ret.push({name: 'art-template', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
@@ -202,7 +218,13 @@ t = new Date().getTime();
 tpl = document.getElementById('juicerTmpl').innerHTML;
 compiled_tpl = juicer(tpl);
 for(var i=0; i<max; ++i) {
-  html = compiled_tpl.render(data[i]);
+  if ('render' == style) {
+    html = compiled_tpl.render(data[i]);
+  } else {
+    compiled_tpl = juicer(tpl);
+    tpl += ' '; //破坏缓存
+    html = '';
+  }
 }
 ret.push({name: 'Juicer', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
