@@ -13,10 +13,6 @@
 
 <body>
 <div id="result"></div>
-<div id="content1"></div>
-<div id="content2"></div>
-<div id="content3"></div>
-<div id="content4"></div>
 
 <!-- 输出结果 -->
 <script type="text/html" id='resultTmpl'>
@@ -165,7 +161,7 @@
 <script>
 
 //生成max个随机数据
-var max=1000;
+var max=10000;
 var style = 'render'; //render compile
 var data = [];
 var max2 = ('render' == style) ? max : 1;
@@ -204,7 +200,6 @@ for(var i=0; i<max; ++i) {
 }
 ret.push({name: 'sTemplate', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-//document.getElementById('content1').innerHTML = html;
 
 //doT渲染
 t = new Date().getTime();
@@ -220,7 +215,6 @@ for(var i=0; i<max; ++i) {
 }
 ret.push({name: 'doT', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-//document.getElementById('content2').innerHTML = html;
 
 //art-template渲染
 t = new Date().getTime();
@@ -236,7 +230,6 @@ for(var i=0; i<max; ++i) {
 }
 ret.push({name: 'art-template', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-//document.getElementById('content3').innerHTML = html;
 
 //layTmpl渲染
 t = new Date().getTime();
@@ -244,11 +237,13 @@ tpl = document.getElementById('layTmpl').innerHTML;
 for(var i=0; i<max; ++i) {
   if ('render' == style) {
     html = laytpl(tpl).render(data[i]);
+  } else {
+    html = laytpl(tpl).parse(tpl, data[0]);
+    html = '';
   }
 }
 ret.push({name: 'laytpl', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-//document.getElementById('content3').innerHTML = html;
 
 //juicer渲染
 t = new Date().getTime();
@@ -259,13 +254,11 @@ for(var i=0; i<max; ++i) {
     html = compiled_tpl.render(data[i]);
   } else {
     compiled_tpl = juicer(tpl);
-    tpl += ' '; //破坏缓存
     html = '';
   }
 }
 ret.push({name: 'Juicer', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
-//document.getElementById('content4').innerHTML = html;
 
 //随机数函数
 function rand(from, to) {
