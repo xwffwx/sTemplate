@@ -8,6 +8,7 @@
 <script type="text/javascript" src="third/art-template-4.13.1.js"></script>
 <script type="text/javascript" src="third/juicer-min-0.6.15.js"></script>
 <script type="text/javascript" src="third/doT.min-1.1.2.js"></script>
+<script type="text/javascript" src="third/laytpl-1.2.0.js"></script>
 </head>
 
 <body>
@@ -138,12 +139,37 @@
   {@/each}
 </script>
 
+<!-- laytpl模板 -->
+<script type="text/html" id='layTmpl'>
+  {{# for(var k1 in d.children) { var item1=d.children[k1]; }}
+    <h2 class="title">{{ item1.menuname }}</h2>
+    <div class="item">
+      {{# for(var k2 in item1.children) { var item2=item1.children[k2]; }}
+        <dl>
+          <dt>{{ item2.menuname }}</dt>
+          <dd>
+            <ul>
+              {{# for(var k3 in item2.children) { var item3=item2.children[k3]; }}
+                <li>
+                  <a href="javascript:;" onclick="console.log('{{item3.menuid}}','{{item3.menuname}}', '{{item3.resurl}}')">{{item3.menuname}}</a>
+                </li>
+              {{# } }}
+            </ul>
+          </dd>
+        </dl>
+      {{# } }}
+    </div>
+  {{# } }}
+</script>
+
 <script>
 
 //生成max个随机数据
-var max=10000;
+var max=1000;
+var style = 'render'; //render compile
 var data = [];
-for(var t=0; t<max; ++t) {
+var max2 = ('render' == style) ? max : 1;
+for(var t=0; t<max2; ++t) {
 	var d = {children:[]};
 	for (var i=rand(3,5); i>0; --i) {
 		var n1 = {menuid:''+i, menuname:'level'+i, resurl:'', children:[]};
@@ -161,7 +187,6 @@ for(var t=0; t<max; ++t) {
 }
 
 var html;
-var style = 'compile'; //render compile
 var ret = [];
 
 //stemplate渲染
@@ -210,6 +235,18 @@ for(var i=0; i<max; ++i) {
   }
 }
 ret.push({name: 'art-template', t: new Date().getTime() - t, result:html});
+sTemplate.renderTmplTo('resultTmpl', ret, 'result');
+//document.getElementById('content3').innerHTML = html;
+
+//layTmpl渲染
+t = new Date().getTime();
+tpl = document.getElementById('layTmpl').innerHTML;
+for(var i=0; i<max; ++i) {
+  if ('render' == style) {
+    html = laytpl(tpl).render(data[i]);
+  }
+}
+ret.push({name: 'laytpl', t: new Date().getTime() - t, result:html});
 sTemplate.renderTmplTo('resultTmpl', ret, 'result');
 //document.getElementById('content3').innerHTML = html;
 
