@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>recursion-demo</title>
+<script type="text/javascript" src="../src/stemplate.js"></script>
+</head>
+
+<body style='position:absolute;top:0px;bottom:0px;left:0px;right:0px;margin:10px;'>
+  <div style="height:100%;">
+    <div style="float:left;width:30%;height:100%;">
+      <textarea id='jsonobj' oninput='refreshObj()' style="width:100%;height:100%;margin:0px;padding:0px;">
+{
+  name:'这是一个递归/子模板测试',
+  array:[
+    {
+      test:'字符串',
+      child: {
+        time:new Date().toLocaleString(),
+        child:'子项的子项。。。'
+      }
+    },
+    2,3,4,
+    {
+      id: 123,
+      name:'aaa'
+    },6
+  ]
+}      </textarea>
+    </div>
+    <div id="htmlobj" style='float:left;width:70%;height:100%;'></div>
+  </div>
+
+  <script type="text/html" id='rtest'>
+    <ul style='list-style-type:none;'>
+      for (var k in st) {
+        <li>
+          <div>
+            <span>{{ k }}=</span>
+            if ('object' == typeof st[k]) {
+              {{ sTemplate.build.template_rtest(st[k]) }}
+            } else {
+              <span>{{ st[k] }}</span>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  </script>
+</body>
+
+<script>
+  refreshObj();
+
+  function refreshObj() {
+    var data;
+    try {
+      data = eval('('+document.getElementById('jsonobj').value+')');
+    } catch {}
+    sTemplate.renderTmplTo('rtest', data || [], 'htmlobj');
+  }
+</script>
+
+</html>
