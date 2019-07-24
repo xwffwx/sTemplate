@@ -28,9 +28,10 @@ var sTemplate = {
     for (var i=0; i<source.length; ++i) {
       ch = source[i];
       switch (ch) {
+        case '\r':
+          break;
         case ' ':
         case '\t':
-        case '\r':
           if (' ' == lineflag) {
             prespace += ch;
           } else {
@@ -139,10 +140,26 @@ var sTemplate = {
    * 返回值
    *   模板函数
    */
-  sTemplate.compileTmpl = function(tmpid) {
-    var domnode = document.getElementById(tmpid);
-    var source = domnode.innerHTML;
+  sTemplate.compileTmpl = function(tmpid, source) {
+    if (!source) {
+      var domnode = document.getElementById(tmpid);
+      source = domnode.innerHTML;
+    }
     return sTemplate.build['template_'+tmpid] = sTemplate.compile(source);
+  }
+
+  /**
+   * 把渲染结果写入节点
+   * @param  node 节点id或jquery对象(如:$('div'))
+   * @return 无
+   */
+  function _to(node, tmplresult) {
+    if ('string' === typeof node) {
+      var domnode = document.getElementById(node);
+      domnode.innerHTML = tmplresult;
+    } else if (node && node.length && node.html) {
+      node.html(tmplresult);
+    }
   }
 
   /*
@@ -156,12 +173,23 @@ var sTemplate = {
   sTemplate.renderTmplTo = function(tmpid, data, node) {
     var tmplresult = sTemplate.renderTmpl(tmpid, data);
     if ('string' === typeof tmplresult) {
-      if ('string' === typeof node) {
-        var domnode = document.getElementById(node);
-        domnode.innerHTML = tmplresult;
-      } else if (node && node.length && node.html) {
-        node.html(tmplresult);
-      }
+      _to(node, tmplresult);
+    }
+  }
+
+  /*
+   * 渲染模板到指定节点，会利用上次的编译结果
+   * 参数
+   *   tmpid:  模板id
+   *   source: 模板代码
+   *   data:   渲染数据
+   *   node:   节点id，可以是jquery对象
+   * 返回值 无
+   */
+  sTemplate.renderSourceTo = function(tmpid, source, data, node) {
+    var tmplresult = sTemplate.renderSource(tmpid, source, data);
+    if ('string' === typeof tmplresult) {
+      _to(node, tmplresult);
     }
   }
 
@@ -179,6 +207,24 @@ var sTemplate = {
       return sTemplate.build[fucname](data);
     } else {
       return sTemplate.compileTmpl(tmpid)(data);
+    }
+  }
+
+  /*
+   * 渲染模板，返回渲染内容，会利用上次的编译结果
+   * 参数
+   *   tmpid:  模板id
+   *   source: 模板代码
+   *   data:   渲染数据
+   * 返回值
+   *   模板渲染结果
+   */
+  sTemplate.renderSource = function(tmpid, source, data) {
+    var fucname = 'template_'+tmpid;
+    if (sTemplate.build[fucname]) {
+      return sTemplate.build[fucname](data);
+    } else {
+      return sTemplate.compileTmpl(tmpid, source)(data);
     }
   }
 
