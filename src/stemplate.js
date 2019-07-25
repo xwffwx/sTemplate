@@ -1,6 +1,6 @@
 /**
- @Name: 自定义模板模块
- @Author: xiaowf
+ @Name: sTemplate 简单模板组件
+ @Author: xiaowf xwffwx@yeah.net
  @Date: 2019/06/14
  */
 var sTemplate = {
@@ -12,10 +12,8 @@ var sTemplate = {
   'use strict';
   /*
    * 编译模板，返回模板函数
-   * 参数
-   *   source:  模板内容
-   * 返回值
-   *   模板函数
+   * @param {string} source:  模板内容
+   * @returns {function} 模板函数
    */
   sTemplate.compile = function(source) {
     var lineflag = ' ';
@@ -135,10 +133,9 @@ var sTemplate = {
   /*
    * 编译模板，返回模板函数
    * 和compile的区别，会在build对象中生成函数引用
-   * 参数
-   *   tmpid: 模板id
-   * 返回值
-   *   模板函数
+   * @param {string} tmpid 模板id
+   * @param {string=} source 模板源码，可选参数
+   * @returns {function} 模板函数
    */
   sTemplate.compileTmpl = function(tmpid, source) {
     if (!source) {
@@ -150,56 +147,52 @@ var sTemplate = {
 
   /**
    * 把渲染结果写入节点
-   * @param  node 节点id或jquery对象(如:$('div'))
-   * @return 无
+   * @param {string|object} node 节点id或jquery对象(如:$('div'))
+   * @param {string} result 渲染结果
    */
-  function _to(node, tmplresult) {
-    if ('string' === typeof node) {
-      var domnode = document.getElementById(node);
-      domnode.innerHTML = tmplresult;
-    } else if (node && node.length && node.html) {
-      node.html(tmplresult);
+  function _writeNode(node, result) {
+    if (node) {
+      if ('object' === typeof node && node.length && node.html) {
+        node.html(result);
+      } else {
+        var domnode = document.getElementById(node);
+        domnode.innerHTML = result;
+      }
     }
   }
 
   /*
    * 渲染模板到指定节点，会利用上次的编译结果
-   * 参数
-   *   tmpid: 模板id
-   *   data:  渲染数据
-   *   node:  节点id，可以是jquery对象
-   * 返回值 无
+   * @param {string} tmpid 模板id
+   * @param {any} data 渲染数据
+   * @param {string|object} node 节点id，可以是jquery对象
    */
   sTemplate.renderTmplTo = function(tmpid, data, node) {
     var tmplresult = sTemplate.renderTmpl(tmpid, data);
     if ('string' === typeof tmplresult) {
-      _to(node, tmplresult);
+      _writeNode(node, tmplresult);
     }
   }
 
   /*
    * 渲染模板到指定节点，会利用上次的编译结果
-   * 参数
-   *   tmpid:  模板id
-   *   source: 模板代码
-   *   data:   渲染数据
-   *   node:   节点id，可以是jquery对象
-   * 返回值 无
+   * @param {string} tmpid 模板id
+   * @param {string} source 模板代码
+   * @param {any} data 渲染数据
+   * @param {string|object} node 节点id，可以是jquery对象
    */
   sTemplate.renderSourceTo = function(tmpid, source, data, node) {
     var tmplresult = sTemplate.renderSource(tmpid, source, data);
     if ('string' === typeof tmplresult) {
-      _to(node, tmplresult);
+      _writeNode(node, tmplresult);
     }
   }
 
   /*
    * 渲染模板，返回渲染内容，会利用上次的编译结果
-   * 参数
-   *   tmpid: 模板id
-   *   data:  渲染数据
-   * 返回值
-   *   模板渲染结果
+   * @param {string} tmpid 模板id
+   * @param {any} data 渲染数据
+   * @returns {string} 模板渲染结果
    */
   sTemplate.renderTmpl = function(tmpid, data) {
     var fucname = 'template_'+tmpid;
@@ -212,12 +205,10 @@ var sTemplate = {
 
   /*
    * 渲染模板，返回渲染内容，会利用上次的编译结果
-   * 参数
-   *   tmpid:  模板id
-   *   source: 模板代码
-   *   data:   渲染数据
-   * 返回值
-   *   模板渲染结果
+   * @param {string} tmpid 模板id
+   * @param {string} source 模板代码
+   * @param {any} data 渲染数据
+   * @returns {string} 模板渲染结果
    */
   sTemplate.renderSource = function(tmpid, source, data) {
     var fucname = 'template_'+tmpid;
