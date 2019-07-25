@@ -10,7 +10,7 @@ var sTemplate = {
 };
 (function() {
   'use strict';
-  /*
+  /**
    * 编译模板，返回模板函数
    * @param {string} source:  模板内容
    * @returns {function} 模板函数
@@ -130,7 +130,7 @@ var sTemplate = {
     return new Function(sTemplate.argname || "st", funcbody);
   }
 
-  /*
+  /**
    * 编译模板，返回模板函数
    * 和compile的区别，会在build对象中生成函数引用
    * @param {string} tmpid 模板id
@@ -161,7 +161,7 @@ var sTemplate = {
     }
   }
 
-  /*
+  /**
    * 渲染模板到指定节点，会利用上次的编译结果
    * @param {string} tmpid 模板id
    * @param {any} data 渲染数据
@@ -174,7 +174,7 @@ var sTemplate = {
     }
   }
 
-  /*
+  /**
    * 渲染模板到指定节点，会利用上次的编译结果
    * @param {string} tmpid 模板id
    * @param {string} source 模板代码
@@ -188,7 +188,7 @@ var sTemplate = {
     }
   }
 
-  /*
+  /**
    * 渲染模板，返回渲染内容，会利用上次的编译结果
    * @param {string} tmpid 模板id
    * @param {any} data 渲染数据
@@ -203,7 +203,7 @@ var sTemplate = {
     }
   }
 
-  /*
+  /**
    * 渲染模板，返回渲染内容，会利用上次的编译结果
    * @param {string} tmpid 模板id
    * @param {string} source 模板代码
